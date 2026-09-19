@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  parser-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install test dependencies
+        run: pip install pytest pyyaml
+      - name: Run command_parser unit tests (ROS-free)
+        run: pytest test/test_command_parser.py -v
+
+  ros2-build:
+    runs-on: ubuntu-latest
+    container: osrf/ros:humble-desktop
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: src/nl_nav2_bot
+      - name: rosdep install
+        shell: bash
+        run: |
+          apt-get update
+          rosdep update
+          rosdep install --from-paths src --ignore-src -r -y || true
+      - name: colcon build
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon build --symlink-install
+      - name: colcon test
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          source install/setup.bash
+          colcon test --packages-select nl_nav2_bot
+          colcon test-result --verbose

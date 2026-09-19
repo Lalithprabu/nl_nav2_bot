@@ -1,0 +1,23 @@
+# Named locations the robot knows about. Edit this to match your map.
+# x, y are in the map frame (meters); yaw is in radians.
+waypoints:
+  kitchen:
+    x: 2.0
+    y: 1.0
+    yaw: 0.0
+  living_room:
+    x: -1.5
+    y: 0.5
+    yaw: 1.57
+  charging_station:
+    x: 0.0
+    y: 0.0
+    yaw: 0.0
+  lab:
+    x: 3.5
+    y: -2.0
+    yaw: -1.57
+  front_door:
+    x: -2.0
+    y: -1.0
+    yaw: 3.14

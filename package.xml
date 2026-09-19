@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>nl_nav2_bot</name>
+  <version>0.1.0</version>
+  <description>
+    Natural-language commander for ROS 2 Nav2: type or speak commands like
+    "go to the kitchen" and the robot autonomously navigates there using
+    Nav2, with an optional LLM fallback for free-form phrasing.
+  </description>
+  <maintainer email="lalithprabu111@gmail.com">Lalith</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav2_msgs</depend>
+  <depend>rclpy_action</depend>
+  <depend>tf_transformations</depend>
+
+  <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>turtlebot3_gazebo</exec_depend>
+  <exec_depend>turtlebot3_navigation2</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
