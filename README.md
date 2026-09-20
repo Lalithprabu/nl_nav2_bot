@@ -117,6 +117,17 @@ colcon test --packages-select nl_nav2_bot
 colcon test-result --verbose
 ```
 
+## Troubleshooting
+
+Getting this running on a real machine (WSL2 + Ubuntu, or native Linux)
+surfaces a few environment-specific gotchas that aren't bugs in this repo's
+code so much as quirks of the Nav2/TurtleBot3/WSLg stack. See
+[TROUBLESHOOTING.md](TROUBLESHOOTING.md) for the full log of issues hit and
+how they were fixed, including a ready-to-run script
+(`scripts/fix_turtlebot3_nav2_plugin_names.sh`) for the most common one: a
+pluginlib class-name mismatch in `turtlebot3_navigation2`'s default params
+file that causes Nav2's planner to fail to activate.
+
 ## Roadmap ideas
 
 - Swap `text_input_node` for real speech-to-text (e.g. Whisper) — the
