@@ -86,7 +86,7 @@ class NLCommandNode(Node):
         pose.pose.orientation.z = qz
         pose.pose.orientation.w = qw
 
-        if not self._action_client.wait_for_server(timeout_sec=5.0):
+        if not self._action_client.wait_for_server(timeout_sec=30.0):
             self._publish_status('Nav2 action server not available.')
             return
 
