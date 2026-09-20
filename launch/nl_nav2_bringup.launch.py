@@ -25,6 +25,12 @@ def generate_launch_description():
     tb3_nav2_dir = get_package_share_directory('turtlebot3_navigation2')
     nl_nav2_bot_dir = get_package_share_directory('nl_nav2_bot')
 
+    # TurtleBot3's own Nav2 launch file needs an explicit params file and
+    # map file - its defaults don't always resolve cleanly across releases.
+    tb3_model = os.environ.get('TURTLEBOT3_MODEL', 'waffle')
+    params_file = os.path.join(tb3_nav2_dir, 'param', f'{tb3_model}.yaml')
+    map_yaml_file = os.path.join(tb3_nav2_dir, 'map', 'map.yaml')
+
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(tb3_gazebo_dir, 'launch', 'turtlebot3_world.launch.py')
@@ -35,7 +41,11 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(tb3_nav2_dir, 'launch', 'navigation2.launch.py')
         ),
-        launch_arguments={'use_sim_time': use_sim_time}.items(),
+        launch_arguments={
+            'use_sim_time': use_sim_time,
+            'map': map_yaml_file,
+            'params_file': params_file,
+        }.items(),
     )
 
     commander = Node(
