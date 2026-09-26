@@ -39,3 +39,13 @@
 - Check GPU rendering: `glxinfo | grep "OpenGL renderer"`
 - Force NVIDIA adapter: `export MESA_D3D12_DEFAULT_ADAPTER_NAME="NVIDIA"`
 - Check for the scheduling bug: `wsl dmesg | grep dxgkio_query_adapter_info` (look for `Ioctl failed: -2`)
+
+## Issue 11: Hardware-accelerated GPU scheduling setting reverts on its own
+
+**Symptom:** After Issue 8 was fixed by disabling "Hardware-accelerated GPU scheduling" in Windows, the exact same freeze (RViz/Gazebo fully unresponsive, `dxgkio_query_adapter_info: Ioctl failed: -22`/`-2` repeating in `wsl dmesg`) came back a couple of days later on the very first launch of a fresh session — not after repeated relaunches like the original pattern.
+
+**Root cause:** The Windows setting had silently reverted to On. This is a known behavior with this particular setting — a Windows Update or an NVIDIA driver update installing in the background can reset it without any notification.
+
+**Fix:** Recheck Settings → System → Display → Graphics → Advanced graphics settings periodically, especially after any Windows Update. If "Hardware-accelerated GPU scheduling" is On again, turn it Off and reboot before starting a new session.
+
+**Diagnostic command used:** since PowerShell doesn't have `grep`/`tail`, use:
