@@ -28,7 +28,7 @@ def generate_launch_description():
     # TurtleBot3's own Nav2 launch file needs an explicit params file and
     # map file - its defaults don't always resolve cleanly across releases.
     tb3_model = os.environ.get('TURTLEBOT3_MODEL', 'waffle')
-    params_file = os.path.join(tb3_nav2_dir, 'param', f'{tb3_model}.yaml')
+    params_file = os.path.join(nl_nav2_bot_dir, 'config', 'waffle_custom.yaml')
     map_yaml_file = os.path.join(tb3_nav2_dir, 'map', 'map.yaml')
 
     gazebo = IncludeLaunchDescription(

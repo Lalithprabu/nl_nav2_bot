@@ -49,3 +49,35 @@
 **Fix:** Recheck Settings → System → Display → Graphics → Advanced graphics settings periodically, especially after any Windows Update. If "Hardware-accelerated GPU scheduling" is On again, turn it Off and reboot before starting a new session.
 
 **Diagnostic command used:** since PowerShell doesn't have `grep`/`tail`, use:
+
+## Issue 12: Nav2 behavior tree recovery-retry limit too low for a cluttered map
+
+**Symptom:** Nav2 goals repeatedly ended `ABORTED` after ~16-22 recovery attempts, even when the robot's final position was within centimeters (once within 1.79e-07 m) of the exact goal.
+
+**Root cause:** The default behavior tree (`navigate_to_pose_w_replanning_and_recovery.xml`) caps the top-level `NavigateRecovery` node at `number_of_retries="6"`. In a map with densely packed obstacles, the controller needs more replanning/recovery cycles than that to finish converging, so the task gets marked as failed just before it would have succeeded.
+
+**Fix:** Copied the default behavior tree and params file into the project (`config/behavior_trees/navigate_to_pose_custom.xml`, `config/waffle_custom.yaml`), raised `number_of_retries` from 6 to 20, and pointed `launch/nl_nav2_bringup.launch.py`'s `params_file` at the custom copy instead of the system default. Also had to add the new `behavior_trees` folder to `setup.py`'s `data_files` list — colcon silently skips files it isn't told to install, which caused a confusing "Couldn't open input XML file" error from `bt_navigator` on the first attempt.
+
+## Issue 13: tf lookups mixing simulation time and wall-clock time (investigating)
+
+**Symptom:** Goal aborted in ~25 seconds with only 1 recovery attempt (much faster than Issue 12's pattern). Logs showed repeated `Received plan with zero length` and `Transform data too old when converting from map to odom`, with a wall-clock Unix timestamp being compared against a simulation-time value a few minutes in.
+
+**Likely cause:** A node using real time instead of simulation time for transform lookups, causing every lookup to appear stale. Under investigation — see whether `use_sim_time` is consistently `true` across all nodes in `config/waffle_custom.yaml`.
+
+## Issue 13 (resolved): tf time mismatch was a one-off, not a real bug
+
+Investigated further and ruled out a clock-sync problem (`date` matched actual wall-clock time exactly). The fast "zero length plan" abort was likely a rare startup timing fluke on that particular run, not a reproducible issue — see Issue 14 for the actual root cause found afterward.
+
+## Issue 14: DWB's Oscillation critic blocks the maneuvering needed in tight spaces
+
+**Symptom:** Robot visibly unable to find an alternate route around obstacles — appears to get stuck rather than backing up/re-angling to try a different path, then eventually aborts.
+
+**Root cause:** DWB's `Oscillation` critic (in the `critics` list for `FollowPath`) uses default thresholds (~5cm net movement / ~11° net turning) before it starts penalizing back-and-forth motion. In a densely packed map, backing up or re-angling is sometimes the only way to route around a pillar, and the default thresholds were too tight to allow it.
+
+**Fix:** Added explicit, looser values to `config/waffle_custom.yaml` under the `FollowPath` plugin: `oscillation_reset_dist: 0.25`, `oscillation_reset_angle: 1.0`, `oscillation_reset_time: 5.0`. Not yet fully confirmed successful in a clean end-to-end test — next session should retest `front_door` with this change in place.
+
+## SLAM mode added
+
+Added `launch/nl_nav2_slam.launch.py`, which brings up Gazebo + `slam_toolbox` (online async mode) instead of the pre-built map + AMCL, letting the robot build its own occupancy grid map live by driving it around with `teleop_twist_keyboard`. Map can be saved with `nav2_map_server`'s `map_saver_cli`.
+
+**Known issue (unresolved):** `slam_toolbox`'s default RViz config shows `Map` and `LaserScan` displays in an error state ("No tf data") even several minutes after launch. Not yet root-caused — next session should expand the status details in RViz's Displays panel to see the exact error text, and check whether `/map` and `/scan` topics are actually being selected/published correctly.
